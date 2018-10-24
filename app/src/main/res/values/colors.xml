@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#8e24aa</color>
+    <color name="colorPrimaryDark">#7b1fa2</color>
+    <color name="colorAccent">#f48d17</color>
+    <color name="textColorPrimary">#212121</color>
+    <color name="textColorSecondary">#757575</color>
+    <color name="colorPrimaryDarkNavigation">#ffffff</color>
+    <color name="white">#ffffff</color>
+    <color name="lighterGray">#e9e3e3</color>
+    <color name="deleteChip">#de3838</color>
+</resources>
