@@ -1,17 +1,20 @@
 package edu.charusat.scheduleit.MainFragments;
 
+import android.Manifest;
 import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
@@ -49,7 +52,7 @@ import edu.charusat.scheduleit.Receiver.SmsReceiver;
  * Created by HP on 28-09-2018.
  */
 
-public class SmsFragment extends Fragment implements View.OnClickListener{
+public class SmsFragment extends Fragment implements View.OnClickListener {
     private View view;
     TelephonyManager telephonyManager;
     SubscriptionManager subscriptionManager;
@@ -59,19 +62,35 @@ public class SmsFragment extends Fragment implements View.OnClickListener{
     TimePickerDialog timePickerDialog;
     private TextView textViewDate;
     private TextView textViewTime;
-    private int curr_day,curr_month,curr_year,curr_hour,curr_min;
+    private int curr_day, curr_month, curr_year, curr_hour, curr_min;
     private String sms_text;
     private ChipsInput chipsInput;
     private List<ContactChip> mContactList;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
-        view = inflater.inflate(R.layout.fragment_sms,container,false);
-        telephonyManager = (TelephonyManager)getActivity().getSystemService(Context.TELEPHONY_SERVICE);
+        view = inflater.inflate(R.layout.fragment_sms, container, false);
+        telephonyManager = (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
         subscriptionManager = (SubscriptionManager) getActivity().getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
         simOperatorNames = new ArrayList<>();
 
+        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            ActivityCompat.requestPermissions(getActivity(),new String[]{android.Manifest.permission.READ_PHONE_STATE},1);
+        }
+        List<SubscriptionInfo> subInfoList = subscriptionManager.getActiveSubscriptionInfoList();
+        if (subInfoList == null){
+            Toast.makeText(getContext(),"No SIM cards found",Toast.LENGTH_SHORT).show();
+            getFragmentManager().popBackStack();
+        }
         textViewDate = (TextView) view.findViewById(R.id.tv_date);
         textViewTime = (TextView) view.findViewById(R.id.tv_time);
 
@@ -87,8 +106,8 @@ public class SmsFragment extends Fragment implements View.OnClickListener{
         curr_hour = cal.get(Calendar.HOUR_OF_DAY);
         curr_min = cal.get(Calendar.MINUTE);
         //Set current date and time to TextView
-        textViewDate.setText(curr_day+"/"+curr_month+"/"+curr_year);
-        textViewTime.setText(curr_hour+":"+curr_min);
+        textViewDate.setText(curr_day + "/" + curr_month + "/" + curr_year);
+        textViewTime.setText(curr_hour + ":" + curr_min);
         textViewDate.setOnClickListener(this);
         textViewTime.setOnClickListener(this);
         setHasOptionsMenu(true);
@@ -103,30 +122,30 @@ public class SmsFragment extends Fragment implements View.OnClickListener{
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        Log.v("Fragment","OnCreateOptionsMenu");
-        inflater.inflate(R.menu.schedule_btn_item,menu);
+        Log.v("Fragment", "OnCreateOptionsMenu");
+        inflater.inflate(R.menu.schedule_btn_item, menu);
         LinearLayout btn_schedule = (LinearLayout) menu.findItem(R.id.schedule_btn).getActionView();
         btn_schedule.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getActivity(),"Schedule item",Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), "Schedule item", Toast.LENGTH_SHORT).show();
                 List<ContactChip> contactSelected = (List<ContactChip>) chipsInput.getSelectedChipList();
-                for (int i=0;i<contactSelected.size();i++){
+                for (int i = 0; i < contactSelected.size(); i++) {
                     setAlarmForSMS(i);
                 }
 
             }
         });
-        super.onCreateOptionsMenu(menu,inflater);
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        Log.v("Fragment","onOptionsItemSelected");
-        switch (item.getItemId()){
+        Log.v("Fragment", "onOptionsItemSelected");
+        switch (item.getItemId()) {
             case R.id.schedule_btn:
-                Toast.makeText(getActivity(),"Schedule button",Toast.LENGTH_SHORT).show();
-                Log.v("Sms","Scheduled");
+                Toast.makeText(getActivity(), "Schedule button", Toast.LENGTH_SHORT).show();
+                Log.v("Sms", "Scheduled");
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -134,12 +153,16 @@ public class SmsFragment extends Fragment implements View.OnClickListener{
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-
-            List<SubscriptionInfo> subInfoList = subscriptionManager.getActiveSubscriptionInfoList();
+        List<SubscriptionInfo> subInfoList = subscriptionManager.getActiveSubscriptionInfoList();
+        if(subInfoList == null){
+            Toast.makeText(getContext(),"No SIM cards inserted", Toast.LENGTH_SHORT).show();
+        }
+        else {
             for(int i=0;i<subInfoList.size();i++) {
                 simOperatorNames.add("Sim " + (i + 1) + ": " + subInfoList.get(i).getCarrierName());
             }
             addItemsToSpinner(simOperatorNames);
+        }
             //build_suggestion_list();
     }
 
