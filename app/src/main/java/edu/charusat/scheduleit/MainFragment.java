@@ -51,6 +51,18 @@ public class MainFragment extends Fragment implements View.OnClickListener{
             R.drawable.ic_failed_outline_24dp
         };
 
+        floatingActionMenu.setOnMenuToggleListener(new FloatingActionMenu.OnMenuToggleListener() {
+            @Override
+            public void onMenuToggle(boolean b) {
+                if (b==false){
+                    shadowView.setVisibility(View.GONE);
+                }
+                else{
+                    shadowView.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
         viewPager = (ViewPager) view.findViewById(R.id.view_pager);
         tabLayout = (TabLayout) view.findViewById(R.id.tab_layout);
         adapter = new TabAdapter(getFragmentManager());

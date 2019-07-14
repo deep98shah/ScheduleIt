@@ -1,6 +1,7 @@
 package edu.charusat.scheduleit;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
@@ -59,6 +60,14 @@ public class MainActivity extends AppCompatActivity implements DrawerAdapter.OnI
         toolbar = (Toolbar)findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        String[] PERMISSIONS = {
+                android.Manifest.permission.READ_CONTACTS,
+                android.Manifest.permission.SEND_SMS,
+                android.Manifest.permission.READ_PHONE_STATE,
+                android.Manifest.permission.GET_ACCOUNTS,
+                android.Manifest.permission.INTERNET
+        };
+
         slidingRootNav = new SlidingRootNavBuilder(this)
                 .withToolbarMenuToggle(toolbar)
                 .withMenuOpened(false)
@@ -86,15 +95,21 @@ public class MainActivity extends AppCompatActivity implements DrawerAdapter.OnI
         //init();
         //String string = getSupportFragmentManager().getBackStackEntryAt(0).getName();
         //Log.v("Returned: ",String.valueOf(getSupportFragmentManager().getBackStackEntryAt(0).getName()));
-        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_PHONE_STATE)!= PackageManager.PERMISSION_GRANTED){
-            ActivityCompat.requestPermissions(this,new String[]{android.Manifest.permission.READ_PHONE_STATE},1);
+        if (!hasPermissions(this, PERMISSIONS)) {
+            ActivityCompat.requestPermissions(this,PERMISSIONS,1);
         }
-        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.SEND_SMS)!= PackageManager.PERMISSION_GRANTED){
-            ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.SEND_SMS},2);
+
+    }
+
+    public static boolean hasPermissions(Context context, String... permissions) {
+        if (context != null && permissions != null) {
+            for (String permission : permissions) {
+                if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
+                    return false;
+                }
+            }
         }
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)!= PackageManager.PERMISSION_GRANTED){
-            ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.READ_CONTACTS},3);
-        }
+        return true;
     }
 
     @Override
